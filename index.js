@@ -29,6 +29,14 @@ async function run() {
     const menuCollection = client.db("distrobossDB").collection("menu");
     const reviewCollection = client.db("distrobossDB").collection("reviews");
     const cartCollection = client.db("distrobossDB").collection("carts");
+    const userCollection = client.db("distrobossDB").collection("users");
+
+    // user related api
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
 
     // menu collection
     app.get("/menu", async (req, res) => {
