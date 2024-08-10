@@ -28,13 +28,22 @@ async function run() {
     // ---------------------
     const menuCollection = client.db("distrobossDB").collection("menu");
     const reviewCollection = client.db("distrobossDB").collection("reviews");
+    const cartCollection = client.db("distrobossDB").collection("carts");
 
+    // menu collection
     app.get("/menu", async (req, res) => {
       const result = await menuCollection.find().toArray();
       res.send(result);
     });
+    // reviews collection
     app.get("/reviews", async (req, res) => {
       const result = await reviewCollection.find().toArray();
+      res.send(result);
+    });
+    // cart collection
+    app.post("/carts", async (req, res) => {
+      const cartItem = req.body;
+      const result = await cartCollection.insertOne(cartItem);
       res.send(result);
     });
 
