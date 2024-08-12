@@ -32,6 +32,14 @@ async function run() {
     const userCollection = client.db("distrobossDB").collection("users");
 
     // user related api
+
+    // get users
+    app.get("/users", async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+
+    // post user
     app.post("/users", async (req, res) => {
       const user = req.body;
       // insert email if user doesn't exists;
