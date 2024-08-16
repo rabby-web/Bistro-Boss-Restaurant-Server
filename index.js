@@ -136,6 +136,13 @@ async function run() {
       const result = await menuCollection.insertOne(item);
       res.send(result);
     });
+    // delete menu
+    app.delete("/menu/:id", verifyToken, verifyAmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await menuCollection.deleteOne(query);
+      res.send(result);
+    });
     // reviews collection
     app.get("/reviews", async (req, res) => {
       const result = await reviewCollection.find().toArray();
