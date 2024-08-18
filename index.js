@@ -32,6 +32,7 @@ async function run() {
     const reviewCollection = client.db("distrobossDB").collection("reviews");
     const cartCollection = client.db("distrobossDB").collection("carts");
     const userCollection = client.db("distrobossDB").collection("users");
+    const paymentCollection = client.db("distrobossDB").collection("payments");
 
     // jwt related api
     app.post("/jwt", async (req, res) => {
@@ -208,6 +209,20 @@ async function run() {
       res.send({
         clientSecret: paymentIntent.client_secret,
       });
+    });
+
+    app.post("/payments", async (req, res) => {
+      const payment = req.body;
+      const paymentResult = await paymentCollection.insertOne(payment);
+      // carefully delete each other
+      console.log("payment info", payment);
+      const query = {
+        _id: {
+          $in: payment.cartIds.map((id) => new ObjectId(id)),
+        },
+      };
+      const deleteResult = await cartCollection.deleteMany(query);
+      res.send({ paymentResult, deleteResult });
     });
 
     // Send a ping to confirm a successful connection
