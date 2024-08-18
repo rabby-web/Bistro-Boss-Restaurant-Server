@@ -211,10 +211,10 @@ async function run() {
       });
     });
 
-    app.get("/payments", verifyToken, async (req, res) => {
+    app.get("/payments/:email", verifyToken, async (req, res) => {
       const query = { email: req.params.email };
-      if(req.params.email !== req.decoded.email){
-        return res.status(403).send({message: 'forbidden access'})
+      if (req.params.email !== req.decoded.email) {
+        return res.status(403).send({ message: "forbidden access" });
       }
       const result = await paymentCollection.find(query).toArray();
       res.send(result);
@@ -232,6 +232,39 @@ async function run() {
       };
       const deleteResult = await cartCollection.deleteMany(query);
       res.send({ paymentResult, deleteResult });
+    });
+    // status or analytics
+    app.get("/admin-stats", verifyToken, verifyAmin, async (req, res) => {
+      const users = await userCollection.estimatedDocumentCount();
+      const menuItems = await menuCollection.estimatedDocumentCount();
+      const orders = await paymentCollection.estimatedDocumentCount();
+
+      // payments calculations
+      // const payments = await paymentCollection.find().toArray();
+      // const revenue = payments.reduce(
+      //   (total, payment) => total + payment.price,
+      //   0
+      // );
+
+      const result = await paymentCollection
+        .aggregate([
+          {
+            $group: {
+              _id: null,
+              totalRevenue: {
+                $sum: "$price",
+              },
+            },
+          },
+        ])
+        .toArray();
+      const revenue = result.length > 0 ? result[0].totalRevenue : 0;
+      res.send({
+        users,
+        menuItems,
+        orders,
+        revenue,
+      });
     });
 
     // Send a ping to confirm a successful connection
