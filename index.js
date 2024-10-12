@@ -26,7 +26,6 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // database connects
-    // Database Collections
     const menuCollection = client.db("distrobossDB").collection("menu");
     const reviewCollection = client.db("distrobossDB").collection("reviews");
     const cartCollection = client.db("distrobossDB").collection("carts");
@@ -37,7 +36,7 @@ async function run() {
     app.post("/jwt", async (req, res) => {
       const user = req.body;
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "1h",
+        expiresIn: "2h",
       });
       res.send({ token });
     });
@@ -121,7 +120,7 @@ async function run() {
     // post user
     app.post("/users", async (req, res) => {
       const user = req.body;
-      // insert email if user doesn't exists;
+      // insert email if user doesn't exists of code;
       // you can do this many ways (1. email unique, 2. upsert, 3. simple checking)
       const query = { email: user.email };
       const existingUser = await userCollection.findOne(query);
@@ -200,7 +199,7 @@ async function run() {
       res.send(result);
     });
 
-    // ===============
+    // =====================
     // todo: payment
     app.post("/create-payment-intent", async (req, res) => {
       const { price } = req.body;
