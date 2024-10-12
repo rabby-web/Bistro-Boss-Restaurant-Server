@@ -6,7 +6,7 @@ require("dotenv").config();
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 5000;
 
-// Middleware setup
+// Middleware use
 app.use(cors());
 app.use(express.json());
 
@@ -25,9 +25,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
-    // await client.connect();
-
+    // database connects
     // Database Collections
     const menuCollection = client.db("distrobossDB").collection("menu");
     const reviewCollection = client.db("distrobossDB").collection("reviews");
