@@ -6,14 +6,15 @@ require("dotenv").config();
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 5000;
 
-// middleware
+// Middleware setup
 app.use(cors());
 app.use(express.json());
 
+// MongoDB connection setup
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster1.gnm5d1v.mongodb.net/?retryWrites=true&w=majority&appName=Cluster1`;
 
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+// Create a MongoClient with a Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -27,14 +28,14 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
 
-    // ---------------------
+    // Database Collections
     const menuCollection = client.db("distrobossDB").collection("menu");
     const reviewCollection = client.db("distrobossDB").collection("reviews");
     const cartCollection = client.db("distrobossDB").collection("carts");
     const userCollection = client.db("distrobossDB").collection("users");
     const paymentCollection = client.db("distrobossDB").collection("payments");
 
-    // jwt related api
+    // JWT (JSON Web Token) API
     app.post("/jwt", async (req, res) => {
       const user = req.body;
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
@@ -43,13 +44,17 @@ async function run() {
       res.send({ token });
     });
 
-    // middlewares
+    // Middleware to verify JWT token
     const verifyToken = (req, res, next) => {
       console.log("inside verify token", req.headers.authorization);
+
       if (!req.headers.authorization) {
         return res.status(401).send({ message: "unauthorized access" });
       }
+
       const token = req.headers.authorization.split(" ")[1];
+
+      // Verify the token
       jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
         if (err) {
           return res.status(401).send({ message: "unauthorized access" });
@@ -60,16 +65,18 @@ async function run() {
       });
     };
 
-    // use verify admin after verifyToken
+    // Middleware to verify if the user is an admin
     const verifyAmin = async (req, res, next) => {
       const email = req.decoded.email;
       const query = { email: email };
       const user = await userCollection.findOne(query);
       const isAdmin = user?.role === "admin";
+
+      // If the user is not an admin, forbid access
       if (!isAdmin) {
         return res.status(403).send({ message: "forbidden access" });
       }
-      next();
+      next(); // Proceed to the next middleware or route handler
     };
 
     // user related api
@@ -267,7 +274,7 @@ async function run() {
       });
     });
 
-    // use aggregate pipeline
+    // use aggregate pipeline use
     app.get("/order-stats", verifyToken, verifyAmin, async (req, res) => {
       const result = await paymentCollection
         .aggregate([
@@ -305,14 +312,7 @@ async function run() {
       res.send(result);
     });
 
-    // Send a ping to confirm a successful connection
-    // await client.db("admin").command({ ping: 1 });
-    // console.log(
-    //   "Pinged your deployment. You successfully connected to MongoDB!"
-    // );
   } finally {
-    // Ensures that the client will close when you finish/error
-    // await client.close();
   }
 }
 run().catch(console.dir);
